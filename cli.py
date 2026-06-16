@@ -21,7 +21,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:
-  python cli.py --url http://api.cliente.com --responsable "Tu Nombre" --cliente "Natatorio Olivos"
+  python cli.py --url http://api.cliente.com --responsable "Juan Alberti" --cliente "Natatorio Olivos"
   python cli.py --demo
   python cli.py --url https://api.example.com --formato todos
         """,

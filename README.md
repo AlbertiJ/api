@@ -31,12 +31,12 @@ Pensada para cuando un cliente te dice *"pasame la base a otro sistema"*. Inspec
 cd api-inspector
 
 # Demo con JSON de ejemplo
-python3 cli.py --demo --responsable "Tu Nombre" --cliente "Natatorio Olivos"
+python3 cli.py --demo --responsable "Juan Alberti" --cliente "Natatorio Olivos"
 
 # Auditoría real contra una API
 python3 cli.py \
     --url "http://api.cliente.com/v1" \
-    --responsable "Tu Nombre" \
+    --responsable "Juan Alberti" \
     --cliente "Cliente X" \
     --formato todos
 ```
@@ -55,7 +55,7 @@ Te deja 3 archivos en `salidas/` por auditoría:
 | Flag | Descripción | Default |
 |------|-------------|---------|
 | `--url` | Endpoint a inspeccionar | (requerido o `--demo`) |
-| `--responsable` | Quién corre la auditoría (tu nombre) | `no_especificado` |
+| `--responsable` | Quién corre la auditoría (Juan Alberti) | `no_especificado` |
 | `--cliente` | Nombre del cliente dueño de la DB | `no_especificado` |
 | `--formato` | `json` / `csv` / `html` / `todos` | `todos` |
 | `--salida` | Directorio de salida | `salidas/` |
@@ -69,7 +69,7 @@ Te deja 3 archivos en `salidas/` por auditoría:
 ══════════════════════════════════════════════════════════════════════
   URL:              file:///path/ejemplos/natatorio.json
   Fecha (UTC):      2026-06-16T05:33:31.160322+00:00
-  Responsable:      Tu Nombre
+  Responsable:      Juan Alberti
   Cliente:          Natatorio Olivos
   Tipo detectado:   natatorio  (confianza 0.5)
   Pistas:           natatorio, apto_medico, grupo_sanguineo, horario
@@ -241,4 +241,4 @@ MIT. Hacé lo que quieras, pero no me hago responsable si exportás una base de 
 
 ## ✍️ Autor
 
-Hecho por [Tu Nombre](https://github.com/AlbertiJ) — herramienta forense para auditorías de migración de datos en PyMEs que usan open source.
+Hecho por [Juan Alberti](https://github.com/AlbertiJ) — herramienta forense para auditorías de migración de datos en PyMEs que usan open source.
