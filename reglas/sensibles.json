@@ -1,0 +1,63 @@
+{
+  "patrones_pii": {
+    "email": {
+      "regex": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+      "categoria": "contacto",
+      "nivel_sensibilidad": "medio"
+    },
+    "telefono": {
+      "regex": "(?:\\+?\\d{1,3}[\\s-]?)?(?:11|15|[23]\\d{1,2})[\\s-]?\\d{3,4}[\\s-]?\\d{3,4}|\\+?\\d{2,3}[\\s-]?\\d{3,4}[\\s-]?\\d{3,4}[\\s-]?\\d{2,4}",
+      "categoria": "contacto",
+      "nivel_sensibilidad": "medio"
+    },
+    "dni": {
+      "regex": "(?<![\\d-])\\d{7,8}(?![\\d-])",
+      "categoria": "identidad",
+      "nivel_sensibilidad": "alto"
+    },
+    "cuit_cuil": {
+      "regex": "\\b\\d{2}-?\\d{8}-?\\d{1}\\b",
+      "categoria": "identidad",
+      "nivel_sensibilidad": "alto"
+    },
+    "fecha_nacimiento": {
+      "regex": "\\d{4}-\\d{2}-\\d{2}|\\d{2}/\\d{2}/\\d{4}",
+      "categoria": "personal",
+      "nivel_sensibilidad": "alto"
+    },
+    "apto_medico": {
+      "regex": "(apto|apto_medico|certificado_medico|apto_fisico)",
+      "categoria": "salud",
+      "nivel_sensibilidad": "critico"
+    },
+    "grupo_sanguineo": {
+      "regex": "(grupo_sanguineo|tipo_sangre|sangre)",
+      "categoria": "salud",
+      "nivel_sensibilidad": "critico"
+    },
+    "obra_social": {
+      "regex": "(obra_social|cobertura|prestador|salud_prepaga)",
+      "categoria": "salud",
+      "nivel_sensibilidad": "critico"
+    }
+  },
+  "campos_nombre_personal": [
+    "nombre", "apellido", "name", "lastname", "first_name", "last_name",
+    "nombre_completo", "fullname", "full_name", "razon_social"
+  ],
+  "campos_salud": [
+    "apto_medico", "apto_fisico", "certificado_medico", "grupo_sanguineo",
+    "tipo_sangre", "obra_social", "cobertura", "alergias", "medicacion",
+    "antecedentes_medicos", "vacunas", "peso", "altura"
+  ],
+  "campos_responsable": [
+    "responsable", "tutor", "nombre_responsable", "dni_responsable",
+    "telefono_responsable", "parentesco", "adulto_responsable"
+  ],
+  "reglas_menores": {
+    "mayoria_edad_default": 18,
+    "campos_requeridos_para_menor": [
+      "nombre_responsable", "dni_responsable", "telefono_responsable", "parentesco"
+    ]
+  }
+}

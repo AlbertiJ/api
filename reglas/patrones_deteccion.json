@@ -1,0 +1,56 @@
+{
+  "biblioteca": {
+    "palabras_clave": ["libro", "socio", "prestamo", "devolucion", "isbn", "autor", "editorial", "categoria", "titulo", "catalogo", "anio_publicacion", "stock", "id_prestamo", "id_libro", "id_socio", "fecha_prestamo"],
+    "campos_esperados": ["id", "titulo", "autor", "isbn", "categoria", "anio_publicacion", "stock"],
+    "campos_prestamo": ["id_prestamo", "id_libro", "id_socio", "fecha_prestamo", "fecha_devolucion"],
+    "campos_socio": ["id_socio", "nombre", "apellido", "dni", "email", "telefono", "fecha_nacimiento"],
+    "obligatorios_socio": ["id_socio", "nombre", "apellido", "dni"],
+    "obligatorios_prestamo": ["id_prestamo", "id_libro", "id_socio"]
+  },
+  "natatorio": {
+    "palabras_clave": ["pileta", "natacion", "socio", "natatorio", "clase", "apto_medico", "grupo_sanguineo", "horario"],
+    "campos_esperados": ["id_socio", "nombre", "apellido", "dni", "email", "telefono", "fecha_nacimiento", "apto_medico", "grupo_sanguineo"],
+    "campos_clase": ["id_clase", "id_socio", "horario", "nivel", "profesor"],
+    "obligatorios_socio": ["id_socio", "nombre", "apellido", "dni", "apto_medico", "fecha_nacimiento"],
+    "obligatorios_clase": ["id_clase", "id_socio", "horario"],
+    "reglas_edad": {
+      "mayoria_edad": 18,
+      "requiere_responsable": true,
+      "campos_responsable": ["nombre_responsable", "dni_responsable", "telefono_responsable", "parentesco"]
+    }
+  },
+  "club_deportivo": {
+    "palabras_clave": ["club", "deporte", "actividad", "cuota", "socio", "cancha", "entrenamiento"],
+    "campos_esperados": ["id_socio", "nombre", "apellido", "dni", "email", "telefono", "fecha_nacimiento", "actividad", "cuota"],
+    "campos_actividad": ["id_actividad", "nombre_actividad", "id_socio", "horario", "profesor"],
+    "obligatorios_socio": ["id_socio", "nombre", "apellido", "dni", "actividad"],
+    "obligatorios_actividad": ["id_actividad", "nombre_actividad", "id_socio"]
+  },
+  "musica": {
+    "palabras_clave": ["track", "album", "artista", "genero", "duracion", "cancion", "disco"],
+    "campos_esperados": ["id", "titulo", "artista", "album", "genero", "anio", "duracion"],
+    "obligatorios": ["id", "titulo", "artista"]
+  },
+  "peliculas": {
+    "palabras_clave": ["pelicula", "director", "genero", "duracion", "reparto", "sinopsis"],
+    "campos_esperados": ["id", "titulo", "director", "genero", "anio", "duracion", "reparto"],
+    "obligatorios": ["id", "titulo", "director"]
+  },
+  "hosting_isp": {
+    "palabras_clave": ["dominio", "plan", "hosting", "vencimiento", "cliente", "servidor", "dns"],
+    "campos_esperados": ["id_cliente", "nombre", "apellido", "email", "telefono", "dominio", "plan", "vencimiento"],
+    "obligatorios_cliente": ["id_cliente", "nombre", "apellido", "email", "dominio", "plan"]
+  },
+  "empresa_sellos": {
+    "palabras_clave": ["sello", "pedido", "cliente", "producto", "stock", "precio"],
+    "campos_esperados": ["id_producto", "nombre", "categoria", "precio", "stock"],
+    "campos_pedido": ["id_pedido", "id_cliente", "id_producto", "cantidad", "fecha"],
+    "obligatorios_producto": ["id_producto", "nombre", "precio"]
+  },
+  "biblioteca_vecinal": {
+    "palabras_clave": ["libro", "socio", "prestamo", "barrio", "taller", "lectura", "titulo", "catalogo"],
+    "campos_esperados": ["id", "titulo", "autor", "categoria", "stock"],
+    "campos_socio": ["id_socio", "nombre", "apellido", "dni", "email", "telefono", "barrio"],
+    "obligatorios_socio": ["id_socio", "nombre", "apellido", "dni"]
+  }
+}
