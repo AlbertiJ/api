@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "establecimiento": "Natatorio Olivos",
+    "endpoint": "/api/v1/socios",
+    "version": "1.0"
+  },
+  "socios": [
+    {
+      "id_socio": 1001,
+      "nombre": "María",
+      "apellido": "González",
+      "dni": "25478963",
+      "email": "maria.gonzalez@example.com",
+      "telefono": "+54 11 4567-8901",
+      "fecha_nacimiento": "1985-03-12",
+      "apto_medico": true,
+      "grupo_sanguineo": "A+",
+      "obra_social": "OSDE",
+      "horario": "lun-mie-vie 19:00"
+    },
+    {
+      "id_socio": 1002,
+      "nombre": "Lucas",
+      "apellido": "Pérez",
+      "dni": "30123456",
+      "email": "lucas.perez@example.com",
+      "telefono": "1145671234",
+      "fecha_nacimiento": "2003-07-22",
+      "apto_medico": true,
+      "grupo_sanguineo": "O-",
+      "horario": "mar-jue 18:00"
+    },
+    {
+      "id_socio": 1003,
+      "nombre": "Sofía",
+      "apellido": "Martínez",
+      "dni": "52314789",
+      "email": "sofia.martinez@example.com",
+      "telefono": "11-5567-3344",
+      "fecha_nacimiento": "2015-11-05",
+      "apto_medico": true,
+      "grupo_sanguineo": "B+",
+      "horario": "sab 10:00"
+    }
+  ],
+  "clases": [
+    {"id_clase": 1, "id_socio": 1001, "horario": "lun-mie-vie 19:00", "nivel": "adulto", "profesor": "Carlos R."},
+    {"id_clase": 2, "id_socio": 1002, "horario": "mar-jue 18:00", "nivel": "juvenil", "profesor": "Carlos R."},
+    {"id_clase": 3, "id_socio": 1003, "horario": "sab 10:00", "nivel": "infantil", "profesor": "Ana L."}
+  ]
+}

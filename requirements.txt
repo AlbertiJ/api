@@ -1,0 +1,3 @@
+# api-inspector no tiene dependencias externas.
+# Solo stdlib de Python 3.8+.
+# (urllib, json, hashlib, csv, datetime, re, pathlib, html)

@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "establecimiento": "Biblioteca Popular San Martín",
+    "endpoint": "/api/v1/catalogo"
+  },
+  "libros": [
+    {
+      "id": 1,
+      "titulo": "El Aleph",
+      "autor": "Jorge Luis Borges",
+      "isbn": "978-950-07-1234-5",
+      "anio_publicacion": 1949
+    },
+    {
+      "id": 2,
+      "titulo": "Rayuela",
+      "autor": "Julio Cortázar",
+      "isbn": "978-950-07-5678-9",
+      "anio_publicacion": 1963
+    }
+  ],
+  "socios": [
+    {
+      "id_socio": 501,
+      "nombre": "Roberto",
+      "apellido": "Suárez",
+      "dni": "18456789",
+      "email": "rsuarez@example.com"
+    }
+  ],
+  "prestamos": [
+    {
+      "id_prestamo": 9001,
+      "id_libro": 1,
+      "fecha_prestamo": "2026-05-10"
+    }
+  ]
+}
