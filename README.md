@@ -1,244 +1,110 @@
-# 🔍 api-inspector
+# API Explorer
 
-**Herramienta de auditoría forense de migración de datos entre APIs / DBs.**
+Explorador de APIs públicas. Mapea la estructura, detecta datos sensibles,
+sigue paginación, y emite un informe firmado con SHA-256.
 
-Pensada para cuando un cliente te dice *"pasame la base a otro sistema"*. Inspeccionás la API una vez, generás un informe firmado con hash SHA-256, y queda registro de qué se vio, qué se omitió, y qué datos sensibles se encontraron.
+Pensado para cuando un cliente te da acceso a una API y querés entender
+qué hay antes de tocarla.
 
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)
-![Tests](https://img.shields.io/badge/tests-9%2F9-success)
-
----
-
-## ✨ Qué hace
-
-- 🌐 Se conecta a una **URL de API** (sin auth — asumiendo endpoints abiertos tipo API pública de un software open source)
-- 🏷️ **Detecta el tipo de sistema** (biblioteca, natatorio, club, música, pelis, hosting, etc.) por palabras clave en el JSON
-- 🔬 **Inspecciona la estructura**: tipos de campos inferidos (string, int, float, fecha, email, boolean, null)
-- 🔒 **Detecta PII** (datos sensibles): mail, teléfono, DNI, fechas de nacimiento, datos médicos, grupos sanguíneos, obra social
-- 👶 **Detecta menores de edad** y avisa si faltan los campos del responsable obligatorio
-- 🚨 **Reporta campos faltantes** vs. el patrón esperado del tipo detectado (la "columna roja" de transparencia en la migración)
-- 🔐 **Genera informe con hash SHA-256** único por timestamp + URL + contenido + responsable + cliente
-- 📦 **Exporta a JSON, CSV y HTML**
-
----
-
-## 🚀 Quick start
+## Instalación
 
 ```bash
-# Sin instalar nada, solo Python 3.8+
-cd api-inspector
-
-# Demo con JSON de ejemplo
-python3 cli.py --demo --responsable "Juan Alberti" --cliente "Natatorio Olivos"
-
-# Auditoría real contra una API
-python3 cli.py \
-    --url "http://api.cliente.com/v1" \
-    --responsable "Juan Alberti" \
-    --cliente "Cliente X" \
-    --formato todos
+pip install -r requirements.txt   # solo si vas a usar la UI web o discovery
 ```
 
-Te deja 3 archivos en `salidas/` por auditoría:
-- `auditoria-<timestamp>-<hash8>.json` — datos completos
-- `auditoria-<timestamp>-<hash8>.csv` — planilla con secciones
-- `auditoria-<timestamp>-<hash8>.html` — informe visual para presentar al cliente
+El núcleo (`cli.py --demo` o `cli.py --url`) no necesita nada extra.
 
----
-
-## 📋 Uso
-
-### Flags del CLI
-
-| Flag | Descripción | Default |
-|------|-------------|---------|
-| `--url` | Endpoint a inspeccionar | (requerido o `--demo`) |
-| `--responsable` | Quién corre la auditoría (Juan Alberti) | `no_especificado` |
-| `--cliente` | Nombre del cliente dueño de la DB | `no_especificado` |
-| `--formato` | `json` / `csv` / `html` / `todos` | `todos` |
-| `--salida` | Directorio de salida | `salidas/` |
-| `--demo` | Usa el JSON de ejemplo `ejemplos/natatorio.json` | off |
-
-### Ejemplo de salida (consola)
-
-```
-══════════════════════════════════════════════════════════════════════
-  INFORME DE AUDITORÍA DE MIGRACIÓN DE DATOS
-══════════════════════════════════════════════════════════════════════
-  URL:              file:///path/ejemplos/natatorio.json
-  Fecha (UTC):      2026-06-16T05:33:31.160322+00:00
-  Responsable:      Juan Alberti
-  Cliente:          Natatorio Olivos
-  Tipo detectado:   natatorio  (confianza 0.5)
-  Pistas:           natatorio, apto_medico, grupo_sanguineo, horario
-
-  HASH SHA-256:     453adac150a4a0478eb1a01609ba14483449364917e8b973fa82fd5782773eca
-══════════════════════════════════════════════════════════════════════
-  RESUMEN
-══════════════════════════════════════════════════════════════════════
-   • Registros:                 6
-   • Campos únicos:             14
-   • Campos faltantes:          0
-   • Datos sensibles (PII):     28
-   • Menores detectados:        1
-
-  PII por nivel de sensibilidad:
-     🟡 medio: 15
-     🟠 alto: 6
-     🔴 critico: 7
-
-  ⚠ ALERTA: Se detectaron menores de edad y faltan campos de responsable:
-     - nombre_responsable
-     - dni_responsable
-     - telefono_responsable
-     - parentesco
-══════════════════════════════════════════════════════════════════════
-  CAMPOS FALTANTES (lo que el cliente omitió)
-══════════════════════════════════════════════════════════════════════
-   [opcional] general.categoria
-   [opcional] socio.telefono
-   ...
-```
-
----
-
-## 🏷️ Tipos de API detectados (extensibles)
-
-| Tipo | Palabras clave | Datos sensibles típicos |
-|------|----------------|------------------------|
-| `biblioteca` | libro, socio, prestamo, isbn, autor | nombre, dni, email |
-| `biblioteca_vecinal` | libro, socio, barrio, taller | nombre, dni, email, barrio |
-| `natatorio` | pileta, natacion, apto_medico, grupo_sanguineo | nombre, dni, fecha_nac, **datos médicos** |
-| `club_deportivo` | club, deporte, actividad, cuota, cancha | nombre, dni, email |
-| `musica` | track, album, artista, genero | bajo riesgo |
-| `peliculas` | pelicula, director, genero, reparto | bajo riesgo |
-| `hosting_isp` | dominio, plan, hosting, vencimiento, dns | email, contacto técnico |
-| `empresa_sellos` | sello, pedido, cliente, producto | email |
-
-¿Tu cliente tiene un sistema que no está? Solo agregá un bloque a `reglas/patrones_deteccion.json`:
-
-```json
-"veterinaria": {
-    "palabras_clave": ["mascota", "veterinario", "vacuna", "especie", "raza", "tutor"],
-    "campos_esperados": ["id_mascota", "nombre", "especie", "raza", "edad", "tutor"],
-    "campos_tutor": ["id_tutor", "nombre", "apellido", "dni", "email", "telefono"],
-    "obligatorios_mascota": ["id_mascota", "nombre", "especie", "tutor"],
-    "obligatorios_tutor": ["id_tutor", "nombre", "apellido", "dni"]
-}
-```
-
-Y listo. Cero código nuevo.
-
----
-
-## 🔐 Modelo de auditoría forense
-
-**Hash SHA-256** sobre el payload completo de la auditoría:
-
-```python
-hash = SHA256({
-    "url",                          # endpoint inspeccionado
-    "timestamp_utc" (con μs),       # cuándo se hizo
-    "responsable",                  # quién lo hizo
-    "cliente",                      # a quién
-    "tipo_detectado",               # qué tipo de sistema
-    "confianza_deteccion",          # qué tan seguro fue el match
-    "pistas_deteccion",             # por qué se clasificó así
-    "estructura",                   # campos encontrados
-    "pii_detectado",                # PII hallados
-    "reglas_menores",               # evaluación de menores
-    "faltantes_reportados",         # lo que el cliente omitió
-    "resumen",                      # totales
-})
-```
-
-Como auditoría nunca corre dos veces en el mismo microsegundo sobre la misma URL+contenido+responsable, el hash es **irrepetible** y **forense**: cualquier edición posterior del informe rompe el hash.
-
-> **Caso típico**: el cliente te dice "no te di el campo `id_user`". Mostrás el hash del informe, la fecha, y queda claro que vos no lo omitiste, él tampoco te lo pasó.
-
----
-
-## 🧪 Tests
+## Uso
 
 ```bash
-python3 tests/test_inspector.py
+# Demo offline (sin internet)
+python cli.py --demo
+
+# Exploración real contra una API
+python cli.py --url https://api.example.com --responsable "Juan" --cliente "Cliente X"
+
+# Exportar solo HTML
+python cli.py --url https://api.example.com --formato html
+
+# Comparar con una exploración previa
+python cli.py --url https://api.example.com --diff-con salidas/vieja.json
+
+# Ajustar ritmo (si la API es muy sensible al rate-limit)
+python cli.py --url https://api.example.com --pausa-min 2.0 --pausa-max 4.0
 ```
 
-9/9 tests pasando. Cubren:
+## Interfaz web (opcional)
 
-- ✅ Detección de tipo (natatorio, biblioteca)
-- ✅ Inspección de campos y tipos inferidos
-- ✅ Detección de campos faltantes vs. patrón esperado
-- ✅ Detección de PII (médico, contacto, identidad)
-- ✅ Reglas de menores + alerta de responsable
-- ✅ Hash único y reproducible
-- ✅ Exportación a los 3 formatos
-- ✅ Generación del informe en texto
-
----
-
-## 📂 Estructura del proyecto
-
-```
-api-inspector/
-├── cli.py                       # entry point CLI
-├── inspector/                   # 5 módulos del motor
-│   ├── core.py                  # conecta + orquesta + hashea
-│   ├── detectar.py              # detecta tipo de API
-│   ├── campos.py                # inspecciona estructura y faltantes
-│   ├── sensibles.py             # detecta PII y evalúa menores
-│   ├── exportar.py              # exporta JSON/CSV/HTML
-│   └── informe.py               # arma el informe en texto
-├── reglas/                      # configuración 100% en JSON
-│   ├── patrones_deteccion.json  # vocabulario por tipo de API
-│   └── sensibles.json           # regex + lista de campos sensibles
-├── ejemplos/                    # 2 JSONs de prueba
-│   ├── natatorio.json
-│   └── biblioteca.json
-├── salidas/                     # auditorías generadas (gitignored)
-├── tests/
-│   └── test_inspector.py
-├── requirements.txt             # vacío — no tiene deps externas
-└── README.md
+```bash
+python app.py
+# Abre http://localhost:5000
 ```
 
+## Tests
+
+```bash
+python tests/test_explorer.py
+```
+
+## Estructura
+
+```
+api/
+├── cli.py                  # entrypoint CLI
+├── app.py                  # interfaz web Flask
+├── explorer/
+│   ├── core.py             # motor principal
+│   ├── config.py           # ritmo de requests, timeouts
+│   ├── detectar.py         # adivina el tipo de API (URL/keys/valores)
+│   ├── campos.py           # mapea estructura
+│   ├── sensibles.py        # detecta PII (con normalización anti-evasión)
+│   ├── normalizar.py       # pre-procesa valores ofuscados
+│   ├── paginacion.py       # sigue cursor/page/Link header
+│   ├── exportar.py         # JSON / CSV / HTML
+│   ├── informe.py          # texto para consola
+│   ├── gap.py              # compara con campos "oficiales"
+│   ├── discovery.py        # fuzzer opcional de endpoints
+│   └── diff.py             # compara dos exploraciones en el tiempo
+├── reglas/                 # JSON de patrones y reglas PII
+├── ejemplos/               # JSON de prueba
+├── salidas/                # archivos generados
+└── tests/
+```
+
+## Características
+
+- **Sin suplantación**: identifica lo que es pero habla HTTP maduro.
+- **Ritmo humano**: pausas configurables entre requests para no ser
+  detectado como bot por WAF/CDN.
+- **Paginación automática**: sigue `next` cursors, `Link` headers, y
+  wrappers `data/results/items` con un tope de seguridad.
+- **PII con normalización**: detecta emails/DNIs incluso si vienen
+  ofuscados con caracteres invisibles o separadores visuales.
+- **Detección ponderada**: la URL pesa más que las keys, las keys más
+  que los valores. Útil contra APIs minimalistas.
+- **Diff entre corridas**: ¿qué cambió desde la última exploración?
+- **Informe firmado**: hash SHA-256 sobre el payload canónico.
+- **Cadena de hashes**: el hash de hoy puede incluir el de ayer.
+
+## Licencia
+
+MIT. Hecho por Juan Alberti.
+
 ---
 
-## 🛣️ Roadmap
+## 💼 Producto y pricing
 
-- [ ] **Web (Flask)** — formulario donde el cliente mete la URL y descarga el informe HTML firmado
-- [ ] **Conectores** — Odoo, WordPress, Django-REST, ERPNext
-- [ ] **Regla de consentimiento** — flag si el JSON tiene `consentimiento` o `acepto_terminos`
-- [ ] **Firma digital PGP** — opcional, además del hash
-- [ ] **Soporte HTML/CSV como input** — además de JSON
+**api-explorer** se ofrece en tiers. La idea es que pruebes con el Free y,
+si te sirve, compres el Pro. Los módulos premium son add-ons opcionales.
 
----
+| Producto | Precio | Incluye |
+|---|---|---|
+| **Free** | $0 | Demo local + 1 exploración online/día contra APIs públicas conocidas (JSONPlaceholder, RandomUser, DummyJSON, ReqRes). Informe JSON/CSV/HTML con hash SHA-256. |
+| **Pro** | **$20** one-time | Todo lo del Free + cualquier URL pública + paginación automática + detección ponderada + normalización PII + diff entre corridas. |
+| **MOD-2** (Visualización de grafo) | **$15** | Genera grafo HTML clickeable de tipos compartidos. Estilo `developer-roadmap`. Requiere Pro. |
+| **MOD-3** (Recon de host) | **$15** | Quién hostea la API, datacenter, listas negras. Requiere Pro. |
+| **MOD-8** (API para terceros) | **$15** | Endpoint HTTP para integrar api-explorer en otros sistemas. Requiere Pro. |
 
-## 💡 Casos de uso
+Para más detalle, ver `MODELO-NEGOCIO-final.md`.
 
-- **Auditoría de migración**: cliente te pasa la URL → vos inspeccionás → informe firmado para presentarle
-- **Pre-flight de import**: antes de cargar una base de datos en otro sistema, verificá qué trae y qué le falta
-- **Inventario de datos**: descubrí qué datos sensibles tiene una API que no sabías
-- **Compliance**: registro forense de qué se inspeccionó, cuándo, y quién
-
----
-
-## 🤝 Contribuir
-
-Sumar un nuevo tipo de API es **un JSON nuevo** en `reglas/patrones_deteccion.json`. No hace falta tocar código.
-
-Si querés sumar un conector a un framework (Odoo, WP, etc.), abrí un issue y lo charlamos.
-
----
-
-## 📜 Licencia
-
-MIT. Hacé lo que quieras, pero no me hago responsable si exportás una base de datos a otro sistema y se rompe 😅 (en serio, **siempre** probá en un ambiente de staging antes de migrar a producción).
-
----
-
-## ✍️ Autor
-
-Hecho por [Juan Alberti](https://github.com/AlbertiJ) — herramienta forense para auditorías de migración de datos en PyMEs que usan open source.
+**Tagline**: *"Saber qué tiene tu API antes de que sea un problema."*

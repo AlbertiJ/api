@@ -1,3 +1,8 @@
-# api-inspector no tiene dependencias externas.
-# Solo stdlib de Python 3.8+.
-# (urllib, json, hashlib, csv, datetime, re, pathlib, html)
+# api-explorer — dependencias
+#
+# Núcleo: solo stdlib de Python 3.8+
+#   urllib, json, hashlib, csv, datetime, re, pathlib, html
+#
+# Extras (solo para features específicas):
+requests>=2.28    # discovery.py — fuzzer de endpoints (opcional)
+flask>=2.2        # app.py — interfaz web local (opcional)

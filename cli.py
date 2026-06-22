@@ -94,7 +94,9 @@ def _demo(args, ruta_demo: Path) -> None:
 
     tipo, conf, pistas = detectar_tipo_api(data, "demo")
     estructura = inspeccionar_campos(data)
-    pii = detectar_pii(data)
+    # El demo siempre lee un archivo local JSON, así que pasamos
+    # 'application/json' explícito para que la detección de PII corra.
+    pii = detectar_pii(data, content_type="application/json")
     menores = evaluar_menores(data, pii, tipo)
     faltantes = detectar_faltantes(estructura, tipo)
 
