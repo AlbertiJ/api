@@ -350,7 +350,48 @@ Ejemplos:
             _aplicar_diff(args, resultado["exploracion"])
 
     except ErrorExploracion as e:
-        print(f"❌ Error de exploración: {e}")
+        # Mensajes específicos por tipo de error para que el usuario sepa
+        # qué pasó sin tener que pegarse con el stacktrace.
+        msg = str(e).lower()
+        if "404" in msg or "not found" in msg:
+            print(f"❌ 404 — La URL {args.url} no existe en el servidor.")
+            print("   Sugerencias:")
+            print("   • Verificá la URL (typo, mayúsculas, slash final)")
+            print("   • Probá primero con --recon para ver qué endpoints existen")
+            print("   • Algunas APIs devuelven 404 si falta header Authorization")
+        elif "403" in msg or "forbidden" in msg:
+            print(f"❌ 403 — El servidor rechazó la petición a {args.url}.")
+            print("   Sugerencias:")
+            print("   • La API probablemente requiere autenticación")
+            print("   • Probá con --auth-bearer TOKEN si tenés un token")
+            print("   • Algunas APIs bloquean por User-Agent — estamos usando api-explorer/0.3")
+        elif "401" in msg or "unauthorized" in msg:
+            print(f"❌ 401 — La API requiere autenticación.")
+            print("   Sugerencias:")
+            print("   • Pasá --auth-bearer <token>")
+            print("   • O configurá Authorization en el header custom")
+        elif "timeout" in msg or "timed out" in msg:
+            print(f"❌ Timeout — La API tardó más de {30}s en responder.")
+            print("   Sugerencias:")
+            print("   • La API está lenta o caída")
+            print("   • Subí las pausas: --pausa-min 3 --pausa-max 6")
+        elif "ssl" in msg or "certificate" in msg:
+            print(f"❌ Error SSL al conectar a {args.url}.")
+            print("   Sugerencias:")
+            print("   • El certificado puede estar vencido o autofirmado")
+            print("   • Si es una API interna de tu empresa, es esperable")
+        elif "name or service not known" in msg or "no such host" in msg or "dns" in msg:
+            print(f"❌ No se pudo resolver el DNS de {args.url}.")
+            print("   Sugerencias:")
+            print("   • Verificá que el dominio esté bien escrito")
+            print("   • Si es una API interna, estás fuera de la VPN/red")
+        elif "connection refused" in msg:
+            print(f"❌ Conexión rechazada por {args.url}.")
+            print("   Sugerencias:")
+            print("   • El servidor puede estar caído")
+            print("   • Verificá el puerto (¿http o https?)")
+        else:
+            print(f"❌ Error de exploración: {e}")
         sys.exit(2)
     except KeyboardInterrupt:
         print("\n⛔ Cancelado por el usuario.")

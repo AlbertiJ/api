@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import socket
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -24,6 +25,15 @@ from .paginacion import (
     ErrorDescarga,
 )
 from .sensibles import detectar_pii, evaluar_menores
+
+# Logger del módulo. Va a stderr. El usuario puede redirigirlo.
+# Formato simple: timestamp | nivel | mensaje
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("api-explorer")
 
 
 class ErrorExploracion(Exception):
@@ -74,15 +84,24 @@ def explorar(
         Diccionario con la exploración completa + rutas de archivos.
     """
     timestamp = datetime.now(timezone.utc).isoformat(timespec="microseconds")
+    log.info("Iniciando exploración de %s (responsable=%s, cliente=%s)",
+             url, responsable, cliente)
 
     # 1) Descargar (con paginación si la API la ofrece)
     try:
         data, meta_pag = descargar_con_paginacion(url, timeout=CFG.timeout)
     except ErrorDescarga as e:
+        log.error("Descarga fallida: %s", e)
         raise ErrorExploracion(f"No pude conectar a {url}: {e}") from e
+
+    ct = meta_pag.get("content_type", "")
+    log.info("Descarga OK — content_type=%r, paginas=%s, total_registros=%s",
+             ct, meta_pag.get("paginas_seguidas", 0),
+             meta_pag.get("total_registros_reales"))
 
     # 2) Detectar el tipo de API
     tipo, confianza, pistas = detectar_tipo_api(data, url)
+    log.info("Tipo detectado: %s (confianza %.2f)", tipo, confianza)
 
     # 3) Recorrer la estructura de campos
     estructura = inspeccionar_campos(data)
@@ -91,13 +110,22 @@ def explorar(
     # Le pasamos el content_type para que skipee si la respuesta no fue JSON
     # (caso real: el explorador contra clientes.credicuotas.com.ar detectó
     # "dni" en el HTML del home como PII — falso positivo arreglado).
-    pii = detectar_pii(data, content_type=meta_pag.get("content_type"))
+    pii = detectar_pii(data, content_type=ct)
+    if "skipped_reason" in pii:
+        log.warning("PII skipeada: %s", pii["skipped_reason"])
+    else:
+        log.info("PII detectada: %d hallazgos", pii.get("total_hallazgos", 0))
 
     # 5) Evaluar reglas de menores si aplica
     menores = evaluar_menores(data, pii, tipo)
+    if menores.get("alerta_menores"):
+        log.warning("Alerta de menores: %d detectados, faltan %d campos de responsable",
+                    menores.get("total_menores", 0),
+                    len(menores.get("campos_responsable_faltantes", [])))
 
     # 6) Detectar campos faltantes contra el patrón del tipo detectado
     faltantes = detectar_faltantes(estructura, tipo)
+    log.info("Campos faltantes respecto al patrón '%s': %d", tipo, len(faltantes))
 
     # 7) Componer el payload firmado
     payload = {
