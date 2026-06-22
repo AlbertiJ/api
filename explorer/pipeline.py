@@ -165,7 +165,7 @@ def _rank_endpoints(endpoints: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     score_map = {200: 10, 401: 8, 403: 6, 405: 4, 301: 2, 302: 2, 500: 1}
     ranked = sorted(
         [e for e in endpoints if e.get("exists")],
-        key=lambda e: (score_map.get(e.get("status", 0), 0), e.get("status", 0) == 200, -e.get("size_bytes", 0)),
+        key=lambda e: (score_map.get(e.get("status", 0), 0), e.get("status", 0) == 200, e.get("size_bytes", 0)),
         reverse=True,
     )
     return ranked

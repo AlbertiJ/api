@@ -174,8 +174,8 @@ def fetch(
                 retry_after = float(e.headers.get("Retry-After", cfg.backoff_base * (2 ** attempt)))
                 time.sleep(min(retry_after, 30))
                 continue
-            # 4xx no reintentar (excepto 408, 425, 429)
-            if e.code in (408, 425) and attempt < cfg.max_retries - 1:
+            # 4xx no reintentar (excepto 408, 425, 429). 5xx sí reintentar.
+            if (e.code in (408, 425) or (500 <= e.code < 600)) and attempt < cfg.max_retries - 1:
                 time.sleep(cfg.backoff_base * (2 ** attempt))
                 continue
             return FetchResult(
@@ -238,20 +238,23 @@ def fingerprint_api(
         out["root_content_type"] = r.content_type
         out["cors"] = r.cors
         # Fingerprints comunes
-        if "tomcat" in out["server"].lower():
+        server_lower = out["server"].lower()
+        if "tomcat" in server_lower or "coyote" in server_lower or "jasper" in server_lower:
             out["backend_lang"] = "Java (Tomcat)"
             out["fingerprint_components"].append("Apache Tomcat")
-        elif "nginx" in out["server"].lower():
+        elif "nginx" in server_lower:
             out["backend_lang"] = "nginx (frontend proxy probable)"
             out["fingerprint_components"].append("nginx")
-        elif "cloudflare" in str(r.headers).lower():
+        elif "cloudflare" in server_lower or "cloudfront" in str(r.headers).lower():
             out["fingerprint_components"].append("CloudFront/Cloudflare")
-        if r.cors:
-            origin = r.cors.get("Access-Control-Allow-Origin", "")
+        # Auth scheme: bearer explícito, o header expuesto, o lo que diga CORS
+        if bearer:
+            out["auth_scheme"] = "Bearer (probable JWT o session)"
+        elif "Bearer" in str(r.headers).lower() or "Authorization" in str(r.headers):
+            out["auth_scheme"] = "Bearer (probable JWT o session)"
+        elif r.cors:
             methods = r.cors.get("Access-Control-Allow-Methods", "")
-            if "Bearer" in str(r.headers).lower() or bearer:
-                out["auth_scheme"] = "Bearer (probable JWT o session)"
-            elif methods:
+            if methods:
                 out["auth_scheme"] = f"Custom ({methods})"
     except FetcherError as e:
         out["error"] = str(e)
