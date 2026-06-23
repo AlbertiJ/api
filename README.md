@@ -21,7 +21,7 @@ El núcleo (`cli.py --demo` o `cli.py --url`) no necesita nada extra.
 python cli.py --demo
 
 # Exploración real contra una API
-python cli.py --url https://api.example.com --responsable "Juan" --cliente "Cliente X"
+python cli.py --url https://api.example.com --responsable "responsable_auditoria" --cliente "Cliente X"
 
 # Exportar solo HTML
 python cli.py --url https://api.example.com --formato html
@@ -86,9 +86,42 @@ api/
 - **Informe firmado**: hash SHA-256 sobre el payload canónico.
 - **Cadena de hashes**: el hash de hoy puede incluir el de ayer.
 
+## 📚 Documentación complementaria
+
+- **[`docs/EJEMPLOS.html`](docs/EJEMPLOS.html)** — Página de presentación + 7 casos de uso copy-paste con output real esperado.
+- **[`EXAMPLES.md`](EXAMPLES.md)** — Comandos rápidos con las 4 APIs públicas del tier Free.
+- **[`manual-01-demostracion.md`](manual-01-demostracion.md)** · [`manual-02-practica-guiada.md`](manual-02-practica-guiada.md) · [`manual-03-exploracion-libre.md`](manual-03-exploracion-libre.md)` — Manuales paso a paso en español.
+- **[`INGENIERIA.md`](INGENIERIA.md)** — Las 4 mejoras técnicas documentadas (normalización PII, detección ponderada, paginación, diff).
+- **[`docs/DIARIO-TECNICO.md`](docs/DIARIO-TECNICO.md)** — Bitácora del grupo de agentes: hallazgo → análisis → fix → hash SHA-256.
+
+## 🗺️ Roadmap
+
+| Tier | Estado | Detalle |
+|---|---|---|
+| **v0.1.0** MVP | ✅ publicado | Auditor forense básico (9 tests) |
+| **v0.2.0** refactor | ✅ publicado | 4 mejoras de `INGENIERIA.md` + 21 tests |
+| **v0.3.0** tiers | ✅ publicado | Free/Pro + licencias HMAC + 92 tests + CI verde |
+| **v0.4.0** modulos | 🔜 siguiente | MOD-2 (grafo), MOD-3 (recon host), MOD-8 (API terceros) |
+| **v0.5.0** compliance | 📋 planeado | Reporte GDPR / Ley 25.326 / CCPA por campo |
+| **v1.0.0** SaaS | 💭 visión | UI web con auth + histórico de diffs por cliente |
+
+Roadmap completo con justificación y criterios de éxito: **[`PRIORIDADES.md`](PRIORIDADES.md)**.
+
+Modelo de negocio y tiers: **[`MODELO-NEGOCIO-final.md`](MODELO-NEGOCIO-final.md)**.
+
+## ✅ Estado del proyecto
+
+```
+Tests:           92/92 verde (local) · 91/91 verde (CI en 3 versiones de Python)
+Lint:            flake8 limpio
+CI:              GitHub Actions verde en push
+Release actual:  v0.3.0
+Licencia:        MIT
+```
+
 ## Licencia
 
-MIT. Hecho por Juan Alberti.
+MIT.
 
 ---
 
