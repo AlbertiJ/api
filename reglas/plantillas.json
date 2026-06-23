@@ -1,0 +1,50 @@
+{
+  "plantillas_basicas": [
+    "/v1/:modulo/:accion",
+    "/v1/:modulo/:recurso/:id",
+    "/v1/:modulo/:accion/:recurso",
+    "/api/:modulo/:accion",
+    "/api/:recurso/:id",
+    "/:modulo/:accion",
+    "/:modulo/:recurso/:id",
+    "/:recurso/:id",
+    "/v:version/:modulo/:accion"
+  ],
+  "valores_default": {
+    "version": ["1", "2", "3"],
+    "modulo": [
+      "auth", "users", "user", "products", "product",
+      "orders", "order", "payments", "payment", "customers",
+      "customer", "admin", "account", "accounts", "profile",
+      "invoices", "invoice", "items", "reports", "search",
+      "onboarding", "resolve", "settings", "billing", "subscriptions",
+      "api", "v1", "v2", "public", "private", "internal", "me"
+    ],
+    "accion": [
+      "list", "get", "find", "search", "create", "update",
+      "delete", "resolve", "lookup", "validate", "verify",
+      "resolvecustomers", "charge", "refund", "cancel", "submit",
+      "approve", "reject", "process", "export", "import",
+      "me", "all", "count", "exists", "ping", "info", "status"
+    ],
+    "recurso": [
+      "items", "records", "data", "info", "details", "config",
+      "list", "listado", "metadata", "schema", "spec", "version",
+      "tree", "all", "active", "inactive", "pending", "history"
+    ],
+    "id": [
+      "1", "0", "test", "admin", "me", "null", "undefined",
+      "123", "001", "999", "default", "sample"
+    ]
+  },
+  "criterios_match": {
+    "status_ok": [200, 201, 202, 204],
+    "status_auth_required": [401, 403],
+    "status_not_found": [404, 410],
+    "min_size_bytes_match": 1,
+    "acepta_json": true,
+    "acepta_text": false,
+    "acepta_html": false,
+    "acepta_xml": false
+  }
+}

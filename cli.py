@@ -210,6 +210,18 @@ Ejemplos:
                    help="Archivo con paths custom para recon (uno por línea)")
     p.add_argument("--max-endpoints", type=int, default=5,
                    help="Máximo de endpoints a analizar en modo --pipeline")
+    # Nuevos flags (v0.4.0): template-driven discovery
+    p.add_argument("--template", metavar="PLANTILLA", default=None,
+                   help="Plantilla con variables para discovery dinámico. "
+                        "Ej: '/v1/:modulo/:accion'. "
+                        "Combinar con --slot-values para acotar la búsqueda.")
+    p.add_argument("--slot-values", metavar="JSON", default=None,
+                   help="Valores por slot, en JSON. "
+                        'Ej: \'{"modulo":["users","products"],"accion":["list","get"]}\'. '
+                        "Si no se pasa, se usan los valores default de reglas/plantillas.json.")
+    p.add_argument("--max-combinaciones", type=int, default=None,
+                   help="Tope de combinaciones a probar en modo --template "
+                        "(default: sin tope).")
 
     args = p.parse_args()
 
@@ -301,6 +313,56 @@ Ejemplos:
         result["hash_sha256"] = hashlib.sha256(canonico.encode("utf-8")).hexdigest()
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
         out_path = Path(args.salida) / f"recon-{timestamp}.json"
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        print(f"\n[OK] Guardado en: {out_path}")
+        return
+
+    # MODO --template: discovery dinámico por plantilla con variables
+    if args.template:
+        from explorer.discovery import (
+            _load_plantillas_default,
+            descubrir_por_template,
+            format_template_report,
+        )
+        from explorer.fetcher import FetcherConfig
+        from explorer.templates import cargar_slot_values_desde_json
+
+        # Parsear slot_values: --slot-values '{"modulo":["users"]}' o usar default
+        slot_values = None
+        if args.slot_values:
+            try:
+                slot_values = cargar_slot_values_desde_json(json.loads(args.slot_values))
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"❌ --slot-values inválido: {e}")
+                print("   Formato: '{\"modulo\":[\"users\",\"products\"]}'")
+                sys.exit(1)
+        else:
+            # Cargar valores default del JSON
+            _, slot_values = _load_plantillas_default()
+
+        cfg = FetcherConfig()
+        print(f"🔍 TEMPLATE DISCOVERY: {args.url}")
+        print(f"   Plantilla: {args.template}")
+        result = descubrir_por_template(
+            base_url=args.url,
+            plantilla=args.template,
+            slot_values=slot_values,
+            cfg=cfg,
+            bearer=args.auth_bearer,
+            custom_headers=custom_headers or None,
+            delay_between=args.pausa_min or 0.0,
+            max_combinaciones=args.max_combinaciones,
+            progress=True,
+        )
+        print()
+        print(format_template_report(result))
+        # Guardar JSON firmado
+        import hashlib
+        canonico = json.dumps(result, sort_keys=True, ensure_ascii=False, default=str)
+        result["hash_sha256"] = hashlib.sha256(canonico.encode("utf-8")).hexdigest()
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        out_path = Path(args.salida) / f"template-discovery-{timestamp}.json"
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(result, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
         print(f"\n[OK] Guardado en: {out_path}")
