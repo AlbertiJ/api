@@ -218,7 +218,7 @@
       </div>
     </div>
     <div class="header-meta">
-      <span class="pill"><span class="dot"></span> 91 tests verde</span>
+      <span class="pill"><span class="dot"></span> 152 tests verde</span>
       <span class="pill"><span class="dot warn"></span> Tier Free + Pro</span>
     </div>
   </header>
@@ -241,9 +241,9 @@
           </p>
 
           <div class="hero-stats">
-            <div class="stat"><div class="n">92</div><div class="l">tests</div></div>
+            <div class="stat"><div class="n">152</div><div class="l">tests</div></div>
             <div class="stat"><div class="n">87</div><div class="l">paths recon</div></div>
-            <div class="stat"><div class="n">3</div><div class="l">formatos</div></div>
+            <div class="stat"><div class="n">∞</div><div class="l">plantillas</div></div>
           </div>
 
           <div class="cta-row">
@@ -295,7 +295,7 @@
     <div>
       <div class="panel">
         <div class="panel-header">
-          <h2>Ejemplos de uso · 7 casos</h2>
+          <h2>Ejemplos de uso · 8 casos</h2>
           <span class="pill"><span class="dot"></span> copy-paste ready</span>
         </div>
         <div class="panel-body">
@@ -445,6 +445,32 @@ python cli.py <span class="k">--url</span> <span class="s">"https://api.cliente.
               <div class="ex-out">
 Headers custom (repetibles):<br>
 <span class="v">--auth-header</span> <span class="s">"Origin:https://www.cliente.com"</span> <span class="v">--auth-header</span> <span class="s">"X-API-Key:abc123"</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8 (nuevo en v0.4.0-alpha) -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">8</div>
+                <div><h3>Template-driven discovery</h3><small>variables en paths en vez de hardcoded</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">
+                En vez de probar paths fijos, declarás la <em>forma</em> con variables
+                y el motor itera los valores hasta encontrar los que matchean.
+              </p>
+<pre class="code">python cli.py <span class="k">--url</span> <span class="s">"https://jsonplaceholder.typicode.com"</span> <span class="k">--template</span> <span class="s">"/:modulo/:id"</span> <span class="k">--slot-values</span> <span class="s">'{"modulo":["users","posts","comments","albums","todos"],"id":["1"]}'</span></pre>
+              <div class="ex-out">
+<span class="v">Combinaciones: 5</span> · <span class="ok">5 matches</span> · 0 auth · 0 no-match<br>
+<span class="v">/users/1</span>      200 · 433B · <span class="ok">match</span><br>
+<span class="v">/posts/1</span>      200 · 282B · <span class="ok">match</span><br>
+<span class="v">/comments/1</span>   200 · 256B · <span class="ok">match</span><br>
+<span class="v">/albums/1</span>     200 ·  56B · <span class="ok">match</span><br>
+<span class="v">/todos/1</span>      200 ·  73B · <span class="ok">match</span>
               </div>
             </div>
           </div>
