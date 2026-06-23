@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="api-explorer — auditor forense de APIs. Mapea estructura, detecta PII, firma con SHA-256." />
+<title>api-explorer · Ejemplos de uso</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-2: #11141b;
+    --panel: #161a23;
+    --panel-2: #1c2230;
+    --border: #2a3142;
+    --text: #e6e9f0;
+    --text-dim: #9aa3b2;
+    --accent: #4ade80;
+    --accent-2: #22d3ee;
+    --warn: #f59e0b;
+    --crit: #ef4444;
+    --code-bg: #0a0c10;
+    --code-text: #c5c8d6;
+    --shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f7f8fa;
+      --bg-2: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #f3f4f7;
+      --border: #e5e7eb;
+      --text: #0b0d12;
+      --text-dim: #555b67;
+      --code-bg: #0e1116;
+      --code-text: #d6d9e0;
+      --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.08);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Header ─────────────────────────────── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; color: #0b0d12; font-weight: 800;
+    box-shadow: 0 6px 20px -8px var(--accent);
+  }
+  .brand h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  .brand small { color: var(--text-dim); display: block; font-size: 12px; }
+  .header-meta { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text-dim); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    font-size: 12px; font-weight: 500;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .dot.warn { background: var(--warn); }
+  .dot.crit { background: var(--crit); }
+
+  /* ── Two-column layout ──────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.85fr) 1.4fr;
+    gap: 24px;
+  }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel + .panel { margin-top: 24px; }
+  .panel-header {
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-header h2 { font-size: 14px; margin: 0; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim); }
+  .panel-body { padding: 22px; }
+
+  /* ── Hero / Presentación ────────────────── */
+  .hero-tagline {
+    font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .hero-sub {
+    color: var(--text-dim); margin: 0 0 22px; font-size: 15px;
+  }
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 22px 0 22px;
+  }
+  .stat {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 12px; text-align: center;
+  }
+  .stat .n { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+  .stat .l { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+  .cta-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0 18px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+    cursor: pointer; text-decoration: none;
+  }
+  .btn:hover { text-decoration: none; border-color: var(--accent-2); }
+  .btn.primary { background: var(--accent); color: #0b0d12; border-color: var(--accent); }
+  .btn.primary:hover { background: #22c55e; border-color: #22c55e; }
+  .btn.ghost { background: transparent; }
+
+  .hash-block {
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px; padding: 12px 14px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; line-height: 1.5; word-break: break-all;
+  }
+  .hash-block .lbl { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: block; font-family: inherit; }
+
+  .feature-list { list-style: none; padding: 0; margin: 18px 0 0; }
+  .feature-list li {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    border-top: 1px dashed var(--border); font-size: 14px;
+  }
+  .feature-list li:first-child { border-top: 0; }
+  .feature-list .check { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+  /* ── Examples column ────────────────────── */
+  .examples-intro { color: var(--text-dim); margin: 0 0 20px; font-size: 14px; }
+
+  .example-card {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0; margin-bottom: 14px; overflow: hidden;
+  }
+  .example-card:last-child { margin-bottom: 0; }
+  .ex-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .ex-title { display: flex; align-items: center; gap: 10px; }
+  .ex-num {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--panel); border: 1px solid var(--border);
+    display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--accent-2);
+  }
+  .ex-title h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .ex-title small { color: var(--text-dim); display: block; font-size: 12px; }
+  .ex-tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .ex-tag.pro { color: #fde68a; border-color: rgba(245, 158, 11, 0.4); }
+  .ex-tag.free { color: #86efac; border-color: rgba(74, 222, 128, 0.3); }
+  .ex-body { padding: 14px 18px 18px; }
+  .ex-desc { color: var(--text-dim); font-size: 13.5px; margin: 0 0 12px; }
+  pre.code {
+    margin: 0; padding: 12px 14px;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto; white-space: pre;
+  }
+  pre.code .c { color: #6b7280; font-style: italic; }
+  pre.code .k { color: #c084fc; }
+  pre.code .s { color: #86efac; }
+  pre.code .v { color: #fbbf24; }
+
+  .ex-out {
+    margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--accent);
+    background: var(--panel); border-radius: 0 8px 8px 0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; line-height: 1.6; color: var(--text-dim);
+  }
+  .ex-out .ok { color: var(--accent); }
+  .ex-out .warn { color: var(--warn); }
+  .ex-out .crit { color: var(--crit); }
+  .ex-out .v { color: var(--text); }
+
+  /* ── Footer ─────────────────────────────── */
+  footer {
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    color: var(--text-dim); font-size: 12px;
+  }
+  footer code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo">⟁</div>
+      <div>
+        <h1>api-explorer</h1>
+        <small>auditor forense de APIs · v0.3.0</small>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="pill"><span class="dot"></span> 91 tests verde</span>
+      <span class="pill"><span class="dot warn"></span> Tier Free + Pro</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ───────────────── LEFT: Hero / Presentación ───────────────── -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Presentación</h2>
+          <span class="pill"><span class="dot"></span> activo</span>
+        </div>
+        <div class="panel-body">
+          <h2 class="hero-tagline">Sabé qué tiene tu API antes de que sea un problema.</h2>
+          <p class="hero-sub">
+            Auditor forense de migración de datos entre APIs y bases de datos.
+            Mapea estructura, detecta PII, sigue paginación y firma cada informe
+            con <strong>SHA-256</strong> — evidencia válida para una auditoría.
+          </p>
+
+          <div class="hero-stats">
+            <div class="stat"><div class="n">92</div><div class="l">tests</div></div>
+            <div class="stat"><div class="n">87</div><div class="l">paths recon</div></div>
+            <div class="stat"><div class="n">3</div><div class="l">formatos</div></div>
+          </div>
+
+          <div class="cta-row">
+            <a class="btn primary" href="https://github.com/AlbertiJ/api">Ver repo →</a>
+            <a class="btn" href="https://github.com/AlbertiJ/api#instalación">Instalar</a>
+            <a class="btn ghost" href="https://github.com/AlbertiJ/api/releases/tag/v0.3.0">v0.3.0</a>
+          </div>
+
+          <div class="hash-block">
+            <span class="lbl">Firma SHA-256 · ejemplo de auditoría</span>
+            68614b873a5ffe8b8c4869aa57a086f45fde0d34daa65d4219e56fca8ff8d462
+          </div>
+
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Detección de tipo por keywords (biblioteca, natatorio, música…)</li>
+            <li><span class="check">✓</span> Detector de PII con normalización anti-evasión (HTML, Base64, JSON)</li>
+            <li><span class="check">✓</span> Detección de menores + alerta de campos de responsable</li>
+            <li><span class="check">✓</span> Recon de 87 paths estándar + 5 endpoints analizados</li>
+            <li><span class="check">✓</span> Diff forense entre dos corridas (drift detection)</li>
+            <li><span class="check">✓</span> Salida JSON / CSV / HTML firmada con SHA-256</li>
+            <li><span class="check">✓</span> Cero dependencias en el núcleo (solo stdlib)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Modelo de uso</h2>
+        </div>
+        <div class="panel-body" style="font-size: 14px;">
+          <p style="margin: 0 0 12px; color: var(--text-dim);">
+            <strong style="color: var(--text);">Tier Free</strong> · 4 APIs públicas permitidas:
+          </p>
+          <ul style="margin: 0 0 14px; padding-left: 20px; color: var(--text-dim); font-family: ui-monospace, monospace; font-size: 12.5px;">
+            <li>jsonplaceholder.typicode.com</li>
+            <li>randomuser.me</li>
+            <li>dummyjson.com</li>
+            <li>reqres.in</li>
+          </ul>
+          <p style="margin: 0 0 12px; color: var(--text-dim);">
+            <strong style="color: var(--text);">Tier Pro</strong> · cualquier URL + headers custom + recon extendido.
+            Licencia <code style="background: var(--code-bg); color: var(--code-text); padding: 2px 5px; border-radius: 4px;">~/.api-explorer-license</code> firmada con HMAC-SHA256.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────────────── RIGHT: Ejemplos de uso ───────────────── -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Ejemplos de uso · 7 casos</h2>
+          <span class="pill"><span class="dot"></span> copy-paste ready</span>
+        </div>
+        <div class="panel-body">
+
+          <p class="examples-intro">
+            Todos los comandos se corren desde la raíz del repo. Las salidas se
+            guardan firmadas en <code style="background: var(--code-bg); color: var(--code-text); padding: 2px 6px; border-radius: 4px;">salidas/</code>.
+          </p>
+
+          <!-- 1 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">1</div>
+                <div><h3>Demo offline (sin internet)</h3><small>el camino más rápido para probar</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Carga un JSON de ejemplo y corre toda la pipeline en local.</p>
+<pre class="code">python cli.py --demo <span class="c">--responsable "responsable_auditoria" --cliente "Demo local"</span></pre>
+              <div class="ex-out">
+<span class="v">Tipo detectado:</span>   natatorio  (confianza 0.38)<br>
+<span class="v">Registros:</span>          6 reales, 6 analizados<br>
+<span class="v">PII:</span>                32 hallazgos (16 medios · 9 altos · <span class="crit">7 críticos</span>)<br>
+<span class="v">Menores:</span>            <span class="crit">1</span> sin responsable declarado → <span class="warn">alerta</span><br>
+<span class="ok">SHA-256:</span> 68614b87…f8d462
+              </div>
+            </div>
+          </div>
+
+          <!-- 2 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">2</div>
+                <div><h3>Auditoría real contra una API</h3><small>smoke test rápido</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Explora estructura, tipos inferidos y PII de un endpoint.</p>
+<pre class="code">python cli.py <span class="k">--url</span> <span class="s">"https://jsonplaceholder.typicode.com/users"</span> <span class="k">--responsable</span> <span class="s">"responsable_auditoria"</span> <span class="k">--cliente</span> <span class="s">"Smoke test"</span></pre>
+              <div class="ex-out">
+<span class="ok">✓ Acceso Free — dominio jsonplaceholder.typicode.com en lista permitida.</span><br>
+<span class="v">Registros:</span> 10 · <span class="v">Campos únicos:</span> 8 · <span class="v">PII:</span> 57 hallazgos<br>
+<span class="ok">SHA-256:</span> c5516a45…69d59
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">3</div>
+                <div><h3>Detector pesado de PII</h3><small>auditoría estilo GDPR</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">RandomUser devuelve perfiles con PII realista (mail, tel, GPS, login).</p>
+<pre class="code">python cli.py <span class="k">--url</span> <span class="s">"https://randomuser.me/api/"</span> <span class="k">--responsable</span> <span class="s">"responsable_auditoria"</span> <span class="k">--cliente</span> <span class="s">"Auditoría PII"</span> <span class="k">--formato</span> html</pre>
+              <div class="ex-out">
+Genera <span class="v">salidas/auditoria-YYYYMMDD-HHMMSS.html</span> con la lista completa
+de hallazgos PII clasificados por nivel (🟡 medio · 🟠 alto · 🔴 crítico).
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">4</div>
+                <div><h3>Recon de superficie</h3><small>87 paths pre-armados</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Fingerprinting + enumeración de endpoints sin tocar datos.</p>
+<pre class="code">python cli.py <span class="k">--url</span> <span class="s">"https://jsonplaceholder.typicode.com"</span> <span class="k">--discover</span> <span class="k">--responsable</span> <span class="s">"responsable_auditoria"</span></pre>
+              <div class="ex-out">
+<span class="v">Server:</span>   cloudflare · <span class="v">Backend:</span> desconocido<br>
+<span class="v">87/87 paths probados</span> · 87 con respuesta<br>
+<span class="ok">Guardado:</span> salidas/recon-YYYYMMDD-HHMMSS.json
+              </div>
+            </div>
+          </div>
+
+          <!-- 5 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">5</div>
+                <div><h3>Pipeline completa</h3><small>recon + análisis + informe consolidado</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Una sola corrida entrega todo: recon, análisis de los endpoints activos, informe firmado.</p>
+<pre class="code">python cli.py <span class="k">--url</span> <span class="s">"https://jsonplaceholder.typicode.com"</span> <span class="k">--pipeline</span> <span class="k">--responsable</span> <span class="s">"responsable_auditoria"</span> <span class="k">--cliente</span> <span class="s">"Auditoría completa"</span></pre>
+              <div class="ex-out">
+<span class="ok">[OK] Guardado:</span> salidas/pipeline-YYYYMMDD-HHMMSS.json
+              </div>
+            </div>
+          </div>
+
+          <!-- 6 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">6</div>
+                <div><h3>Diff forense entre corridas</h3><small>drift detection</small></div>
+              </div>
+              <span class="ex-tag free">Free</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Compará la auditoría de hoy contra una previa. Muestra campos nuevos, desaparecidos y PII que cambió.</p>
+<pre class="code"><span class="c"># semana 1</span>
+python cli.py <span class="k">--url</span> <span class="s">"https://api.cliente.com/v1"</span> <span class="k">--cliente</span> <span class="s">"Cliente X"</span>
+
+<span class="c"># semana 4</span>
+python cli.py <span class="k">--url</span> <span class="s">"https://api.cliente.com/v1"</span> <span class="k">--cliente</span> <span class="s">"Cliente X"</span> <span class="k">--diff-con</span> salidas/auditoria-semana1.json</pre>
+              <div class="ex-out">
+<span class="v">Diff:</span> 1 campo nuevo (<span class="v">tax_id</span>) · 1 desaparecido (<span class="v">legacy_codigo</span>) · <span class="warn">3 PII nuevas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7 -->
+          <div class="example-card">
+            <div class="ex-head">
+              <div class="ex-title">
+                <div class="ex-num">7</div>
+                <div><h3>API protegida (con auth)</h3><small>caso Pro · bearer o headers custom</small></div>
+              </div>
+              <span class="ex-tag pro">Pro</span>
+            </div>
+            <div class="ex-body">
+              <p class="ex-desc">Para cualquier URL que no esté en la lista Free, necesitás licencia Pro.</p>
+<pre class="code"><span class="c"># 1) generar licencia Pro (una vez)</span>
+python scripts/generar_licencia.py <span class="k">--email</span> <span class="s">"comprador@empresa.com"</span> <span class="k">--tier</span> pro
+
+<span class="c"># 2) explorar API protegida</span>
+python cli.py <span class="k">--url</span> <span class="s">"https://api.cliente.com/v1"</span> <span class="k">--auth-bearer</span> <span class="s">"TOKEN_AQUI"</span> <span class="k">--cliente</span> <span class="s">"Cliente X"</span></pre>
+              <div class="ex-out">
+Headers custom (repetibles):<br>
+<span class="v">--auth-header</span> <span class="s">"Origin:https://www.cliente.com"</span> <span class="v">--auth-header</span> <span class="s">"X-API-Key:abc123"</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div>
+      Documento generado contra la salida real de la corrida
+      <code>--demo</code> del repo. Última verificación: CI run #2 verde.
+    </div>
+    <div>
+      <a href="https://github.com/AlbertiJ/api/blob/main/docs/EJEMPLOS.html">Ver fuente</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
