@@ -5,12 +5,20 @@ Cubren el núcleo + las 4 mejoras documentadas en INGENIERIA.md.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
 
 # Permite importar el paquete sin instalarlo.
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Los tests de licencia.py necesitan APIEXPLORER_LICENSE_SECRET seteada
+# cuando este archivo corre como script (`python tests/test_explorer.py`),
+# ya que en ese modo conftest.py no se carga (eso es exclusivo de pytest).
+os.environ.setdefault(
+    "APIEXPLORER_LICENSE_SECRET", "solo-para-tests-no-usar-en-produccion"
+)
 
 from explorer.campos import detectar_faltantes, inspeccionar_campos
 from explorer.config import CFG

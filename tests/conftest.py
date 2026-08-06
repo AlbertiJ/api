@@ -9,9 +9,17 @@ que devuelve un directorio temporal único por test.
 """
 from __future__ import annotations
 
+import os
 import tempfile
 
 import pytest
+
+# Los tests de licencia.py necesitan APIEXPLORER_LICENSE_SECRET seteada
+# (el secreto ya no vive hardcodeado en el código — ver explorer/licencia.py).
+# Este es un valor SOLO para tests, no el secreto real de producción.
+os.environ.setdefault(
+    "APIEXPLORER_LICENSE_SECRET", "solo-para-tests-no-usar-en-produccion"
+)
 
 
 @pytest.fixture

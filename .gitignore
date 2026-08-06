@@ -9,6 +9,10 @@ __pycache__/
 venv/
 env/
 .env/
+.env
+
+# Secretos locales (nunca commitear)
+.envrc
 
 # Testing
 .pytest_cache/

@@ -15,32 +15,52 @@ La firma `sig` se calcula como:
 
     HMAC-SHA256(SECRET_LICENCIA_PRO, email.lower()|tier|issued)
 
-Si la firma no coincide, la licencia es inválida. No se puede falsificar
-sin conocer el SECRET, que está embebido en el código fuente. Aceptable
-como MVP para un producto one-time de $20.
+El SECRET NO vive en el código fuente — se lee de la variable de entorno
+`APIEXPLORER_LICENSE_SECRET`. Motivo: este repo es público en GitHub, y
+un secreto embebido en el código deja de ser secreto en el momento del
+push. La versión anterior tenía el HMAC hardcodeado acá mismo; ese valor
+quedó expuesto en el historial de git y debe tratarse como comprometido
+para siempre — cualquiera que lo haya visto/clonado pudo generar
+licencias Pro válidas gratis. Se rotó por uno nuevo que solo existe
+fuera del repo.
+
+Cómo configurarlo:
+    export APIEXPLORER_LICENSE_SECRET="<valor generado con secrets.token_urlsafe(32)>"
 
 En una próxima iteración se puede:
-- Mover el SECRET a un servidor de licencias (modelo SaaS).
-- Usar criptografía asimétrica (RSA) en vez de HMAC.
-- Ofuscar el SECRET en el binario con maza.
+- Mover la validación a un servidor de licencias (modelo SaaS), así el
+  secreto nunca toca la máquina del cliente.
+- Usar criptografía asimétrica (RSA/Ed25519) en vez de HMAC simétrico,
+  para que el validador no necesite conocer el mismo secreto que firma.
 """
 from __future__ import annotations
 
 import hashlib
 import hmac
 import json
+import os
 import re
 from pathlib import Path
 from typing import Tuple
 
-# SECRET compartido entre el generador y el validador.
-# Generado aleatoriamente el 2026-06-21. Rotarlo cuando se publique v1.0.
-SECRET_LICENCIA_PRO = (
-    "REDACTED-SECRET-ROTADO-2026-08-05"
-)
-
 # Validación de email — regex simple pero suficiente.
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class SecretNoConfigurado(RuntimeError):
+    """Se intentó firmar o validar una licencia sin APIEXPLORER_LICENSE_SECRET seteada."""
+
+
+def _obtener_secret() -> str:
+    secret = os.environ.get("APIEXPLORER_LICENSE_SECRET", "")
+    if not secret:
+        raise SecretNoConfigurado(
+            "Falta la variable de entorno APIEXPLORER_LICENSE_SECRET. "
+            "Generá un valor con `python -c \"import secrets; "
+            "print(secrets.token_urlsafe(32))\"` y exportalo antes de "
+            "generar o validar licencias. No lo hardcodees en el código."
+        )
+    return secret
 
 
 def generar_firma(email: str, tier: str, issued: str) -> str:
@@ -50,7 +70,7 @@ def generar_firma(email: str, tier: str, issued: str) -> str:
     """
     canonico = f"{email.lower().strip()}|{tier}|{issued}"
     return hmac.new(
-        SECRET_LICENCIA_PRO.encode("utf-8"),
+        _obtener_secret().encode("utf-8"),
         canonico.encode("utf-8"),
         hashlib.sha256,
     ).hexdigest()
@@ -88,7 +108,11 @@ def validar_licencia_en_archivo(ruta: Path) -> Tuple[bool, str]:
     if not EMAIL_REGEX.match(email):
         return False, f"Email inválido en licencia: '{email}'"
 
-    sig_esperado = generar_firma(email, tier, issued)
+    try:
+        sig_esperado = generar_firma(email, tier, issued)
+    except SecretNoConfigurado as e:
+        return False, str(e)
+
     # compare_digest evita timing attacks
     if not hmac.compare_digest(sig_recibido, sig_esperado):
         return False, "Firma inválida — licencia manipulada o SECRET desactualizado"
