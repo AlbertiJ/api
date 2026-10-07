@@ -4,7 +4,7 @@
 #   urllib, json, hashlib, csv, datetime, re, pathlib, html
 #
 # Extras (solo para features específicas):
-requests>=2.28    # discovery.py — fuzzer de endpoints (opcional)
+requests>=2.34.2    # discovery.py — fuzzer de endpoints (opcional)
 flask>=2.2        # app.py — interfaz web local (opcional)
 
 # Testing (solo para correr la suite unificada):
