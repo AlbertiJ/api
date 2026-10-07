@@ -220,8 +220,7 @@ Lista de acciones concretas que te llevan de 0 → 100 stars en 2-4 semanas:
 2. **Escribir 1 artículo en dev.to** (ej. "Audité randomuser.me y encontré
    32 PII en mi propia herramienta").
 3. **Postear en LinkedIn** con screenshot del informe HTML generado.
-4. **Pedir feedback a 5 colegas** (los de tu red Obsidian, [omitido],
-   [omitido]) → cada uno deja star + comenta.
+4. **Pedir feedback a 5 colegas** (de tu red de contactos) → cada uno deja star + comenta.
 5. **Postear en 2 grupos de Telegram** de devs Python LATAM.
 6. **Postear en Reddit r/Python** con título: "I built a forensic API
    auditor in pure Python stdlib (no dependencies)".
